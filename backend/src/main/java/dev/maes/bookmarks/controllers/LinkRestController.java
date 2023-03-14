@@ -1,11 +1,12 @@
 package dev.maes.bookmarks.controllers;
 
-import javax.validation.Valid;
+import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest;
+
+import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,7 @@ import dev.maes.bookmarks.configurations.exceptions.ErrorProcessingException;
 import dev.maes.bookmarks.configurations.exceptions.UnsavedEntityException;
 import dev.maes.bookmarks.entities.Link;
 import dev.maes.bookmarks.services.LinkService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/links")
@@ -32,31 +34,32 @@ public class LinkRestController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<Link> findById(@PathVariable("id") int linkId) throws ErrorProcessingException, EntityNotFoundException {
-		Link salida = linkService.findById(linkId);
-		return new ResponseEntity<Link>(salida, HttpStatus.OK);
+		Link link = linkService.findById(linkId);
+		return ResponseEntity.ok(link);
 	}
 
 	@GetMapping("/")
-		public ResponseEntity<Page<Link>> findAll(Pageable pageable) throws ErrorProcessingException {
-			Page<Link> salida = linkService.findAll(pageable);
-			return new ResponseEntity<Page<Link>>(salida, HttpStatus.OK);
-		}
+	public ResponseEntity<Page<Link>> findAll(Pageable pageable) throws ErrorProcessingException {
+		Page<Link> links = linkService.findAll(pageable);
+		return ResponseEntity.ok(links);
+	}
 
-	@PostMapping
-		public ResponseEntity<Link> save(@Valid @RequestBody Link link) throws UnsavedEntityException {
-			Link salida = linkService.save(link);
-			return new ResponseEntity<Link>(salida, HttpStatus.CREATED);
-		}
+	@PostMapping("/")
+	public ResponseEntity<Link> save(@Valid @RequestBody Link link) throws UnsavedEntityException {
+		Link createdLink = linkService.save(link);
+		URI location = fromCurrentRequest().path("/{id}").buildAndExpand(createdLink.getId()).toUri();
+		return ResponseEntity.created(location).body(createdLink);
+	}
 
-	@PutMapping
-		public ResponseEntity<Link> update(@RequestBody Link link) throws UnsavedEntityException {
-			Link salida = linkService.update(link);
-			return new ResponseEntity<Link>(salida, HttpStatus.OK);
-		}
+	@PutMapping("/")
+	public ResponseEntity<Link> update(@RequestBody Link link) throws UnsavedEntityException {
+		Link updatedLink = linkService.update(link);
+		return ResponseEntity.ok(updatedLink);
+	}
 
 	@DeleteMapping("/{id}")
-		public ResponseEntity<Link> delete(@PathVariable("id") int linkId) throws ErrorProcessingException, EntityNotFoundException {
-			linkService.delete(linkId);
-			return new ResponseEntity<Link>(HttpStatus.NO_CONTENT);
-		}
+	public ResponseEntity<Link> delete(@PathVariable("id") int linkId) throws ErrorProcessingException, EntityNotFoundException {
+		linkService.delete(linkId);
+		return ResponseEntity.noContent().build();
+	}
 }

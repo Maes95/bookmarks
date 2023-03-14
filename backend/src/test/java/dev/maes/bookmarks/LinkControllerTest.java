@@ -9,9 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.stream.IntStream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +17,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.maes.bookmarks.configurations.exceptions.UnsavedEntityException;
 import dev.maes.bookmarks.entities.Link;
@@ -44,7 +44,6 @@ public class LinkControllerTest {
     @BeforeEach
     public void setUp() throws Exception {
         RestAssured.port = port;
-
         dummyLink = new JSONObject().put("url", "http://www.dummy.com/"); 
     }
 
