@@ -1,4 +1,4 @@
-package dev.maes.bookmarks;
+package dev.maes.bookmarks.controllers;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
@@ -16,8 +16,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,14 +23,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.maes.bookmarks.configurations.exceptions.UnsavedEntityException;
 import dev.maes.bookmarks.entities.Link;
 import dev.maes.bookmarks.repositories.LinkRepository;
-import io.restassured.RestAssured;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+
 @DisplayName("LinkController Test")
-public class LinkControllerTest {
-
-    @LocalServerPort
-    int port;
+public class LinkControllerTest extends AbtractControllerTest{
 
     @Autowired
 	public LinkRepository linkRepository;
@@ -43,7 +37,6 @@ public class LinkControllerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        RestAssured.port = port;
         dummyLink = new JSONObject().put("url", "http://www.dummy.com/"); 
     }
 

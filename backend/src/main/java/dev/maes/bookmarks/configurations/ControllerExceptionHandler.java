@@ -2,19 +2,19 @@ package dev.maes.bookmarks.configurations;
 
 import java.util.Date;
 
-import dev.maes.bookmarks.configurations.exceptions.EntityNotFoundException;
-import dev.maes.bookmarks.configurations.exceptions.ErrorProcessingException;
-import dev.maes.bookmarks.configurations.exceptions.UnsavedEntityException;
-import dev.maes.bookmarks.configurations.models.ErrorMessage;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+import dev.maes.bookmarks.configurations.exceptions.EntityNotFoundException;
+import dev.maes.bookmarks.configurations.exceptions.ErrorProcessingException;
+import dev.maes.bookmarks.configurations.exceptions.UnsavedEntityException;
+import dev.maes.bookmarks.configurations.models.ErrorMessage;
 import lombok.extern.apachecommons.CommonsLog;
 
 
@@ -72,6 +72,15 @@ public class ControllerExceptionHandler {
                 .path(request.getDescription(false)).build();
         this.printError(request, ex, message.getMessage());
         return new ResponseEntity<ErrorMessage>(message, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorMessage> accessDenyExceptionHandler(Exception ex, WebRequest request) {
+        ErrorMessage message = ErrorMessage.builder().status(HttpStatus.UNAUTHORIZED.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.name()).timestamp(new Date()).message(ex.getMessage())
+                .path(request.getDescription(false)).build();
+        this.printError(request, ex);
+        return new ResponseEntity<ErrorMessage>(message, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(Exception.class)

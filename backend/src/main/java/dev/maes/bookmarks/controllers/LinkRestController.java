@@ -31,7 +31,6 @@ public class LinkRestController {
 	@Autowired
 	LinkService linkService;
 
-
 	@GetMapping("/{id}")
 	public ResponseEntity<Link> findById(@PathVariable("id") int linkId) throws ErrorProcessingException, EntityNotFoundException {
 		Link link = linkService.findById(linkId);
