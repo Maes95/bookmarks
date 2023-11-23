@@ -2,7 +2,6 @@ package dev.maes.bookmarks.services;
 
 import java.util.List;
 
-import org.h2.util.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,7 @@ public class DatabaseInitializer {
             .username("admin")
             .password(encoder.encode("password"))
             .email("admin@maes.dev")
-            .roles(List.of("ROLE_ADMIN"))
+            .roles(List.of("ROLE_ADMIN", "ROLE_USER"))
             .build();
         userRepository.save(admin);
 

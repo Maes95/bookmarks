@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import dev.maes.bookmarks.security.jwt.AuthEntryPointJwt;
 import dev.maes.bookmarks.security.jwt.AuthTokenFilter;
@@ -56,20 +59,26 @@ public class WebSecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http.cors().and().csrf().disable()
-        .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-        .authorizeHttpRequests()
-        .requestMatchers("/api/auth/**").permitAll()
-        .requestMatchers("/api/links/**").permitAll() //Public
-        .requestMatchers("/api/users/**").permitAll() // Public
-        .anyRequest().authenticated()
-        ; // Private
+  public MvcRequestMatcher.Builder mvc(HandlerMappingIntrospector introspector) {
+    return new MvcRequestMatcher.Builder(introspector);
+  }
+
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
+      // CVE-2023-34035 -> https://spring.io/security/cve-2023-34035
+      // Mitigation: https://github.com/jzheaux/cve-2023-34035-mitigations
+      http.cors(Customizer.withDefaults()).csrf(csrf -> csrf.disable())
+              .exceptionHandling(handling -> handling.authenticationEntryPoint(unauthorizedHandler))
+              .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+              .authorizeHttpRequests(
+                      authorize -> authorize.requestMatchers(mvc.pattern("/api/auth/**")).permitAll()
+                          .requestMatchers(mvc.pattern("/api/links/**")).permitAll() // Public
+                          .requestMatchers(mvc.pattern("/api/users/**")).permitAll() // Public
+                          .anyRequest().authenticated() // Private
+              );
     http.authenticationProvider(authenticationProvider());
     http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
     http.addFilterAfter(setLoggedUserFilter, UsernamePasswordAuthenticationFilter.class);
-    http.headers().frameOptions().disable();// FOR H2
     return http.build();
   }
 }
