@@ -20,7 +20,7 @@ public class UserService{
   private UserRepository userRepository;
   
 
-  public User findById(final int userId) throws ErrorProcessingException, EntityNotFoundException {
+  public User findById(final long userId) throws ErrorProcessingException, EntityNotFoundException {
     try {
       // TODO: Add message EntityNotFoundException
       return this.userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException());
